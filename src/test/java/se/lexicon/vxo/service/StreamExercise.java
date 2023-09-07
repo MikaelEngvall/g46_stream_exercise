@@ -31,8 +31,8 @@ public class StreamExercise {
     @Test
     public void task1() {
         List<Integer> integers = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-//        integers.stream().forEach(System.out::println);
-        integers.forEach(System.out::println);
+//        integers.stream().forEach(System.out::println);  //Our version
+        integers.forEach(System.out::println); // Suggested version from IntelliJ
     }
 
     /**
@@ -85,7 +85,7 @@ public class StreamExercise {
     @Test
     public void task5() {
         int expectedSize = 8882;
-//        Set<LocalDate> dates = null;
+//        Set<LocalDate> dates = null;  // Redundant according to IntelliJ
 //        Extract a TreeSet with all birthDates
         Set<LocalDate> dates = people.stream().map(Person::getDateOfBirth)
                         .collect(Collectors.toCollection(TreeSet::new));
