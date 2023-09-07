@@ -8,6 +8,7 @@ import se.lexicon.vxo.model.PersonDto;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
@@ -119,7 +120,8 @@ public class StreamExercise {
         Optional<Person> optional = null;
 
         optional = people.stream()
-                .filter(person -> person.getPersonId() == 5436).findFirst();
+                .filter(person -> person.getPersonId() == 5436).
+                findFirst();
 
         assertNotNull(optional);
         assertTrue(optional.isPresent());
@@ -134,10 +136,17 @@ public class StreamExercise {
         LocalDate expectedBirthDate = LocalDate.parse("1910-01-02");
 
         Optional<Person> optional = null;
+        Optional<LocalDate> date;
+
+        Comparator<LocalDate> integerComparatorL = (n1, n2) -> n1.compareTo(n2);
+
+        date = people.stream()
+                                    .map(Person::getDateOfBirth)
+                                    .min(integerComparatorL);
 
         optional = people.stream()
-                .filter(Person::getDateOfBirth)
-                        .min(Comparator.comparing())
+                .filter(person -> person.getDateOfBirth().equals(date.get()))
+                .findFirst();
 
         assertNotNull(optional);
         assertEquals(expectedBirthDate, optional.get().getDateOfBirth());
