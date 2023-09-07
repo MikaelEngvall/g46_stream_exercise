@@ -134,10 +134,17 @@ public class StreamExercise {
         LocalDate expectedBirthDate = LocalDate.parse("1910-01-02");
 
         Optional<Person> optional = null;
+        Optional<LocalDate> date;
+
+        Comparator<LocalDate> integerComparatorL = (n1, n2) -> n1.compareTo(n2);
+
+        date = people.stream()
+                .map(Person::getDateOfBirth)
+                .min(integerComparatorL);
 
         optional = people.stream()
-                .filter(Person::getDateOfBirth)
-                        .min(Comparator.comparing())
+                .filter(person -> person.getDateOfBirth().equals(date.get()))
+                .findFirst();
 
         assertNotNull(optional);
         assertEquals(expectedBirthDate, optional.get().getDateOfBirth());
@@ -151,13 +158,16 @@ public class StreamExercise {
         int expectedSize = 892;
         LocalDate date = LocalDate.parse("1920-01-01");
 
-        List<PersonDto> dtoList = null;
-
-        //TODO:Write code here
+//        List<PersonDto> dtoList = null;
+        List<PersonDto> dtoList = people.stream()
+                .filter(person -> person.getDateOfBirth().isBefore(date))
+                .map(person -> new PersonDto(person.getPersonId(), person.getFirstName()))
+                .collect(Collectors.toList());
 
         assertNotNull(dtoList);
         assertEquals(expectedSize, dtoList.size());
     }
+
 
     /**
      * In a Stream Filter out one person with id 5914 from people and take the birthdate and build a string from data that the date contains then
