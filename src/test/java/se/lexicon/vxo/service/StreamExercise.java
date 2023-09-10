@@ -1,17 +1,22 @@
 package se.lexicon.vxo.service;
 
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import org.junit.jupiter.api.Test;
 import se.lexicon.vxo.model.Gender;
 import se.lexicon.vxo.model.Person;
 import se.lexicon.vxo.model.PersonDto;
 
+import java.sql.SQLOutput;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.*;
-import java.util.function.Predicate;
-import java.util.function.ToIntFunction;
+import java.util.function.*;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -19,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * You have to solve each task by using a java.util.Stream or any of it's variance.
  * You also need to use lambda expressions as implementation to functional interfaces.
  * (No Anonymous Inner Classes or Class implementation of functional interfaces)
- *
  */
 public class StreamExercise {
 
@@ -31,7 +35,8 @@ public class StreamExercise {
     @Test
     public void task1() {
         List<Integer> integers = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        integers.stream().forEach(System.out::println);
+        integers.stream()
+                .forEach(System.out::println);
     }
 
     /**
@@ -41,7 +46,8 @@ public class StreamExercise {
     public void task2() {
         long amount = 0;
 
-        amount = people.stream().count();
+        amount = people.stream()
+                .count();
 
         assertEquals(10000, amount);
     }
@@ -87,7 +93,7 @@ public class StreamExercise {
         Set<LocalDate> dates = null;
 //        Extract a TreeSet with all birthDates
         dates = people.stream().map(Person::getDateOfBirth)
-                        .collect(Collectors.toCollection(TreeSet::new));
+                .collect(Collectors.toCollection(TreeSet::new));
 
         assertNotNull(dates);
         assertTrue(dates instanceof TreeSet);
@@ -120,8 +126,8 @@ public class StreamExercise {
         Optional<Person> optional = null;
 
         optional = people.stream()
-                .filter(person -> person.getPersonId() == 5436).
-                findFirst();
+                .filter(person -> person.getPersonId() == 5436)
+                .findFirst();
 
         assertNotNull(optional);
         assertTrue(optional.isPresent());
@@ -141,8 +147,8 @@ public class StreamExercise {
         Comparator<LocalDate> integerComparatorL = (n1, n2) -> n1.compareTo(n2);
 
         date = people.stream()
-                                    .map(Person::getDateOfBirth)
-                                    .min(integerComparatorL);
+                .map(Person::getDateOfBirth)
+                .min(integerComparatorL);
 
         optional = people.stream()
                 .filter(person -> person.getDateOfBirth().equals(date.get()))
@@ -162,7 +168,10 @@ public class StreamExercise {
 
         List<PersonDto> dtoList = null;
 
-        //TODO:Write code here
+        dtoList = people.stream()
+                .filter(person -> person.getDateOfBirth().isBefore(LocalDate.of(1920, 1, 1)))
+                .map(person -> new PersonDto(person.getPersonId(), (person.getFirstName() + " " + person.getLastName())))
+                .toList();
 
         assertNotNull(dtoList);
         assertEquals(expectedSize, dtoList.size());
@@ -179,7 +188,16 @@ public class StreamExercise {
 
         Optional<String> optional = null;
 
-        //TODO:Write code here
+        Function<Person, String> birthdayBuilder = person -> person.getDateOfBirth().getDayOfWeek().name() + " " +
+                person.getDateOfBirth().getDayOfMonth() + " " +
+                person.getDateOfBirth().getMonth() + " " +
+                person.getDateOfBirth().getYear();
+
+        Optional<Person> personWithId = people.stream()
+                .filter(person -> person.getPersonId() == personId)
+                .findFirst();
+
+        optional = Optional.of(birthdayBuilder.apply(personWithId.get()));
 
         assertNotNull(optional);
         assertTrue(optional.isPresent());
@@ -197,7 +215,11 @@ public class StreamExercise {
         double expected = 54.42;
         double averageAge = 0;
 
-        //TODO:Write code here
+        int sum = people.stream()
+                .mapToInt(personToAge)
+                .sum();
+
+        averageAge = (double) sum / (people.size());
 
         assertTrue(averageAge > 0);
         assertEquals(expected, averageAge, .01);
@@ -212,7 +234,16 @@ public class StreamExercise {
 
         String[] result = null;
 
-        //TODO:Write code here
+        Function<Person, String> personToString = person -> person.getFirstName();
+
+        Predicate<String> palindrome = name -> name.toLowerCase().contentEquals(new StringBuilder(name.toLowerCase()).reverse());
+
+        result = people.stream()
+                .map(personToString)
+                .distinct()
+                .filter(palindrome)
+                .sorted()
+                .toArray(String[]::new);
 
         assertNotNull(result);
         assertArrayEquals(expected, result);
@@ -226,7 +257,8 @@ public class StreamExercise {
         int expectedSize = 107;
         Map<String, List<Person>> personMap = null;
 
-        //TODO:Write code here
+        personMap = people.stream()
+                .collect(groupingBy(Person::getLastName));
 
         assertNotNull(personMap);
         assertEquals(expectedSize, personMap.size());
@@ -239,7 +271,14 @@ public class StreamExercise {
     public void task14() {
         LocalDate[] _2020_dates = null;
 
-        //TODO:Write code here
+//        Stream<LocalDate> calendar2020 = Stream
+//                .iterate(LocalDate.of(2020, 1, 1), day -> day.plusDays(1))
+//                .limit(365);
+
+        _2020_dates = Stream
+                .iterate(LocalDate.of(2020, 1, 1), day -> day.plusDays(1))
+                .limit(366) //leap year!
+                .toArray(LocalDate[]::new);
 
 
         assertNotNull(_2020_dates);
